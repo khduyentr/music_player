@@ -4,10 +4,10 @@
 3. Play - Pause - done
 4. CD rotation - done
 5. Change song next|prev - done
-6. Random - done
-7. Next / Repeat song 
-8. Active song 
-9. Scroll active song to view
+6. Random - done -> optimal not to repeat 1 song
+7. Next / Repeat song - done
+8. Active song - done (optimal)
+9. Scroll active song to view - done
 10. Play song when clicked
 */
 
@@ -115,6 +115,7 @@ const processLine = $('.time .process-line');
 const nextSongBtn = $('.btn-next');
 const prevSongBtn = $('.btn-prev');
 const shuffleBtn = $('.btn-shuffle');
+const repeatBtn = $('.btn-repeat');
 
 const player = $('.player');
 
@@ -123,13 +124,14 @@ const app = {
     isPlaying: false,
     songs: SONGS,
     isShuffling: false,
+    isRepeating: false,
 
     render: function() {
 
         const htmls = this.songs.map((song, index) => {
             var id = index + 1 < 10 ? '0' + (index + 1).toString() : (index + 1).toString();
             return `                    
-                <li class="song">
+                <li class="song ${index === this.currentIndex ? 'active' : ''}" data-index="${index}">
                     <div class="song__info">
                         <div class="order">${id}</div>
                         <div class="info">
@@ -195,6 +197,16 @@ const app = {
         this.loadCurrentSong();
     },
 
+    scrollToActiveSong: function() {
+        setTimeout(() => {
+            $('.song.active').scrollIntoView({
+                behavior: "smooth", 
+                block: "center"
+            });
+        }, 100)
+        
+    },
+
 
     handleEvents: function() {
         const _this = this;
@@ -248,14 +260,12 @@ const app = {
 
         // when song is ended  
         audio.onended = function() {
-            if (_this.isShuffling) {
-                _this.moveToRandomSong();
+            if (_this.isRepeating) {
+                _this.updateSongTimeline(0);
+                audio.play();
             } else {
-                _this.moveToNextSong();
-            }
-
-            _this.updateSongTimeline(0);
-            audio.play();
+                nextSongBtn.click();
+            } 
         }
 
         // change song currentTime 
@@ -280,6 +290,8 @@ const app = {
 
             _this.updateSongTimeline(0);
             audio.play();
+            _this.render();
+            _this.scrollToActiveSong();
         }
 
         // prev song btn click
@@ -292,12 +304,38 @@ const app = {
 
             _this.updateSongTimeline(0);
             audio.play();
+            _this.render();
+            _this.scrollToActiveSong();
         }
         
         // shuffle btn click
         shuffleBtn.onclick = function() {
             _this.isShuffling = !_this.isShuffling;
             shuffleBtn.classList.toggle('active', _this.isShuffling);
+        }
+
+        // repeat 1 song only {
+        repeatBtn.onclick = function() {
+            _this.isRepeating = !_this.isRepeating;
+            repeatBtn.classList.toggle('active', _this.isRepeating);
+        }
+
+        // playlist is clicked
+        playlist.onclick = function(e) {
+
+            const songNode = e.target.closest('.song:not(.active)');
+            if (songNode) {
+                //console.log(songNode.dataset.index);
+                _this.currentIndex = Number(songNode.dataset.index);
+                _this.loadCurrentSong();
+
+                _this.updateSongTimeline(0);
+
+                audio.play();
+                _this.render();
+                _this.scrollToActiveSong();
+
+            }
         }
 
     },

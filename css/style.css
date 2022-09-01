@@ -228,6 +228,10 @@ body{
     color: var(--primary-violet);
 }
 
+.song:active{
+    opacity: 0.9;
+}
+
 .song.active .song__info .info .title p{
     color: var(--primary-violet);;
     font-size: 15px;
