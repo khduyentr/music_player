@@ -119,12 +119,16 @@ const repeatBtn = $('.btn-repeat');
 
 const player = $('.player');
 
+const wave = document.getElementById('wave');
+
 const app = {
     currentIndex: 0,
     isPlaying: false,
     songs: SONGS,
     isShuffling: false,
     isRepeating: false,
+    unchosenIds: [...Array(SONGS.length).keys()],
+
 
     render: function() {
 
@@ -187,11 +191,37 @@ const app = {
         process.style.width = percent + '%';
     },
 
+
+    randomizeIndex: function() {
+        // choose random from unchosenIds
+
+        // already play all the songs in list randomly
+        if (this.unchosenIds.length == 0) {
+            // reset the unchosenIds
+            this.unchosenIds = [...Array(SONGS.length).keys()];
+        }
+
+        let randomIndex = Math.floor(Math.random() * this.unchosenIds.length);
+        let value = this.unchosenIds[randomIndex];
+
+        // delete random index out of unchosenIds
+        this.unchosenIds = this.unchosenIds.filter(item => {
+            return item !== value;
+        })
+
+        console.log('VALUE:' + value)
+        console.log('LENGTH: ' + this.unchosenIds.length);
+
+        return value;
+    },
+
     moveToRandomSong: function() {
         let newIndex;
         do {
             newIndex = Math.floor(Math.random() * this.songs.length);
         } while (newIndex === this.currentIndex);
+
+        console.log(this.randomizeIndex());
 
         this.currentIndex = newIndex;
         this.loadCurrentSong();
@@ -235,6 +265,7 @@ const app = {
             _this.isPlaying = true;
             playBtn.classList.add('playing');
             imgAnimation.play();
+            wave.classList.add('loader');
         }
 
         // when song is being paused
@@ -242,6 +273,8 @@ const app = {
             _this.isPlaying = false;
             playBtn.classList.remove('playing');
             imgAnimation.pause();
+            wave.classList.remove('loader');
+
         }
 
         // when song's process has changed 
@@ -312,6 +345,17 @@ const app = {
         shuffleBtn.onclick = function() {
             _this.isShuffling = !_this.isShuffling;
             shuffleBtn.classList.toggle('active', _this.isShuffling);
+
+            // start shuffling mode
+            if (_this.isShuffling) {
+                // reset the unchosenIds list 
+                _this.unchosenIds = [...Array(SONGS.length).keys()]
+                // delete the current index out of unchosen list 
+                _this.unchosenIds = _this.unchosenIds.filter(id => {
+                    return id !== this.currentIndex;
+                })
+            }
+
         }
 
         // repeat 1 song only {
@@ -325,7 +369,6 @@ const app = {
 
             const songNode = e.target.closest('.song:not(.active)');
             if (songNode) {
-                //console.log(songNode.dataset.index);
                 _this.currentIndex = Number(songNode.dataset.index);
                 _this.loadCurrentSong();
 
