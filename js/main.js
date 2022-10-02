@@ -22,8 +22,8 @@ const SONGS = [
     {
         name: 'Completely Yours',
         singer: 'Jade',
-        path: '../music/completely_yours.mp3',
-        image: '../img/completely_yours.jpg',
+        path: '../../music/completely_yours.mp3',
+        image: '../../img/completely_yours.jpg',
         end: '04:32'
     },
     {
